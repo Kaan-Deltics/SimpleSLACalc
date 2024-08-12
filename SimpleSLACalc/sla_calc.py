@@ -49,7 +49,7 @@ class SLACalculator:
         close_hour: int,
         time_zone: str,
         skip_business_hours: Optional[bool] = True,
-        sla_hours: Optional[int] = None,
+        sla_hours: Optional[float] = None,
         sla_days: Optional[int] = None,
         sla_weeks: Optional[int] = None,
         excluded_dates: Optional[list[str]] = None,
@@ -287,11 +287,11 @@ class SLACalculator:
             converted_date_list.append(pendulum.parse(date).to_date_string())  # type: ignore
         return converted_date_list
 
-    def convert_sla_time_to_mins(self, sla_time: int, sla_type: str) -> int:
+    def convert_sla_time_to_mins(self, sla_time: float, sla_type: str) -> int:
         """Converts sla[hours, days, weeks] into minutes
 
         Args:
-            sla_time (int): base time number to convert
+            sla_time (float): base time number to convert
             sla_type (str): base type. Must be ("hours", "days", "weeks")
 
         Returns:
@@ -299,11 +299,11 @@ class SLACalculator:
         """
         sla_mins = 0
         if sla_type == "hours":
-            sla_mins = sla_time * 60
+            sla_mins = int(sla_time * 60)  # Convert hours to minutes, ensuring int result
         elif sla_type == "days":
-            sla_mins = sla_time * 24 * 60
+            sla_mins = int(sla_time * 24 * 60)  # Convert days to minutes
         elif sla_type == "weeks":
-            sla_mins = sla_time * 7 * 24 * 60
+            sla_mins = int(sla_time * 7 * 24 * 60)  # Convert weeks to minutes
         return sla_mins
 
     def exclude_custom_dates(self, start_time: pendulum.DateTime) -> pendulum.DateTime:
