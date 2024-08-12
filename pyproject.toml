@@ -8,6 +8,13 @@ version = "0.0.5"
 authors = [
   { name="Kenny Sambrook", email="kenny@krstek.com" },
 ]
+[project.dynamic]
+readme = true
+requires-python = true
+license = true
+classifiers = true
+dependencies = true
+
 description = "A simple SLA Calculator"
 [project.urls]
 "Homepage" = "https://github.com/exodusprime1337/SimpleSLACalc"
