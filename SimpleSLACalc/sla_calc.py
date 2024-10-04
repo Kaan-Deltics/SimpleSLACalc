@@ -46,7 +46,9 @@ class SLACalculator:
         self,
         start_time: datetime | pendulum.DateTime | str,
         open_hour: int,
+        open_minute: int,
         close_hour: int,
+        close_minute: int,
         time_zone: str,
         skip_business_hours: Optional[bool] = True,
         sla_hours: Optional[float] = None,
@@ -96,7 +98,9 @@ class SLACalculator:
         else:
             raise NoSLACounterItems("You did not provide a matching SLA timeframe")
         self.open_hour = open_hour
+        self.open_minute = open_minute
         self.close_hour = close_hour
+        self.close_minute = close_minute
         self.time_zone = time_zone
         self.skip_business_hours = skip_business_hours
         self.excluded_dates = excluded_dates
@@ -156,14 +160,15 @@ class SLACalculator:
             start_time = self.check_for_holidays(start_time=start_time)
         if self.excluded_dates:
             start_time = self.exclude_custom_dates(start_time=start_time)
-        open_time = self.calculate_open_and_close_times(sla_start_time=start_time, hour_of_day=self.open_hour)
-        close_time = self.calculate_open_and_close_times(sla_start_time=start_time, hour_of_day=self.close_hour)
+        open_time = self.calculate_open_and_close_times(sla_start_time=start_time, hour_of_day=self.open_hour, minute_of_day=self.open_minute)
+        close_time = self.calculate_open_and_close_times(sla_start_time=start_time, hour_of_day=self.close_hour, minute_of_day=self.close_minute)
         return start_time, open_time, close_time
 
     def calculate_open_and_close_times(
         self,
         sla_start_time: pendulum.DateTime,
         hour_of_day: int,
+        minute_of_day: int
     ):
         """Takes in the target hour of the day(24h) and returns a
         datetime object with the minutes and hour replaced with the provided
@@ -181,7 +186,7 @@ class SLACalculator:
             month=sla_start_time.month,
             day=sla_start_time.day,
             hour=hour_of_day,
-            minute=0,
+            minute=minute_of_day,
             second=0,
             tz=pendulum.timezone(self.time_zone),
         )
@@ -203,7 +208,7 @@ class SLACalculator:
                 month=start_time.month,
                 day=start_time.day,
                 hour=self.open_hour,
-                minute=0,
+                minute=self.open_minute,
                 second=0,
                 tz=pendulum.timezone(self.time_zone),
             )

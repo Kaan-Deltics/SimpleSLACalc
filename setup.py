@@ -4,9 +4,9 @@ import setuptools
 
 setuptools.setup(
     name="SimpleSLACalc",
-    version="0.0.1",
+    version="0.0.6",
     description="Simple SLA Calculator",
-    long_description=pathlib.Path("README.md").read_text(),
+    long_description=pathlib.Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
     url="https://github.com/exodusprime1337/SimpleSLACalc",
     author="Kenny Sambrook",
