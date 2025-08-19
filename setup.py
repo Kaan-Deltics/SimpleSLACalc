@@ -27,7 +27,7 @@ setuptools.setup(
         "Topic :: Software Development",
         "Topic :: Utilities",
     ],
-    python_requires=">=3.10,<3.12",
+    python_requires=">=3.10,<3.15",
     install_requires=[
         "holidays==0.35",
         "pendulum==3.0.0b1",
