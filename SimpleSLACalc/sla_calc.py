@@ -31,6 +31,9 @@ class SLAItem:
     def sla_exp_day(self) -> int:
         return self.sla_expiration_time.day
 
+    def sla_exp_sec(self) -> int:
+        return self.sla_expiration_time.second
+
     def sla_exp_date(self) -> pendulum.Date:
         return self.sla_expiration_time.date()
 
@@ -90,11 +93,11 @@ class SLACalculator:
         if sla_hours and sla_days and sla_weeks:
             raise ToManySLACounterItems("Please provide sla_hours, or sla_days, or sla_weeks. No more than one.")
         if sla_hours:
-            self.sla_mins = self.convert_sla_time_to_mins(sla_time=sla_hours, sla_type="hours")
+            self.sla_secs = self.convert_sla_time_to_secs(sla_time=sla_hours, sla_type="hours")
         elif sla_days:
-            self.sla_mins = self.convert_sla_time_to_mins(sla_time=sla_days, sla_type="days")
+            self.sla_secs = self.convert_sla_time_to_secs(sla_time=sla_days, sla_type="days")
         elif sla_weeks:
-            self.sla_mins = self.convert_sla_time_to_mins(sla_time=sla_weeks, sla_type="weeks")
+            self.sla_secs = self.convert_sla_time_to_secs(sla_time=sla_weeks, sla_type="weeks")
         else:
             raise NoSLACounterItems("You did not provide a matching SLA timeframe")
         self.open_hour = open_hour
@@ -124,24 +127,24 @@ class SLACalculator:
         """
         start_time, open_time, close_time = self.check_start_time_date_variables(start_time=start_time)
         if self.skip_business_hours:
-            sla_time = start_time.add(minutes=self.sla_mins)
+            sla_time = start_time.add(seconds=self.sla_secs)
             return SLAItem(start_time=start_time, open_time=None, close_time=None, sla_expiration_time=sla_time)
         if start_time < open_time:
             start_time = open_time
         elif start_time > close_time:
             start_time = open_time.add(days=1)
             start_time, open_time, close_time = self.check_start_time_date_variables(start_time=start_time)
-        time_left_in_today = start_time.diff(close_time).in_minutes()
-        if time_left_in_today >= self.sla_mins:
+        time_left_in_today = start_time.diff(close_time).in_seconds()
+        if time_left_in_today >= self.sla_secs:
             sla_obj = SLAItem(
                 start_time=start_time,
                 open_time=open_time,
                 close_time=close_time,
-                sla_expiration_time=start_time.add(minutes=self.sla_mins),
+                sla_expiration_time=start_time.add(seconds=self.sla_secs),
             )
             return sla_obj
         else:
-            self.sla_mins = self.sla_mins - time_left_in_today
+            self.sla_secs = self.sla_secs - time_left_in_today
             start_time = open_time.add(days=1)
             return self.find_sla_time(start_time=start_time)
 
@@ -187,7 +190,7 @@ class SLACalculator:
             day=sla_start_time.day,
             hour=hour_of_day,
             minute=minute_of_day,
-            second=0,
+            second=sla_start_time.second,
             tz=pendulum.timezone(self.time_zone),
         )
         return calculated_time
@@ -209,7 +212,7 @@ class SLACalculator:
                 day=start_time.day,
                 hour=self.open_hour,
                 minute=self.open_minute,
-                second=0,
+                second=start_time.second,
                 tz=pendulum.timezone(self.time_zone),
             )
         return start_time
@@ -292,24 +295,24 @@ class SLACalculator:
             converted_date_list.append(pendulum.parse(date).to_date_string())  # type: ignore
         return converted_date_list
 
-    def convert_sla_time_to_mins(self, sla_time: float, sla_type: str) -> int:
-        """Converts sla[hours, days, weeks] into minutes
+    def convert_sla_time_to_secs(self, sla_time: float, sla_type: str) -> int:
+        """Converts sla[hours, days, weeks] into seconds
 
         Args:
             sla_time (float): base time number to convert
             sla_type (str): base type. Must be ("hours", "days", "weeks")
 
         Returns:
-            int: sla timeframe in minutes
+            int: sla timeframe in seconds
         """
-        sla_mins = 0
+        sla_secs = 0
         if sla_type == "hours":
-            sla_mins = int(sla_time * 60)  # Convert hours to minutes, ensuring int result
+            sla_secs = int(sla_time * 3600)  # Convert hours to seconds, ensuring int result
         elif sla_type == "days":
-            sla_mins = int(sla_time * 24 * 60)  # Convert days to minutes
+            sla_secs = int(sla_time * 24 * 3600)  # Convert days to seconds
         elif sla_type == "weeks":
-            sla_mins = int(sla_time * 7 * 24 * 60)  # Convert weeks to minutes
-        return sla_mins
+            sla_secs = int(sla_time * 7 * 24 * 3600)  # Convert weeks to seconds
+        return sla_secs
 
     def exclude_custom_dates(self, start_time: pendulum.DateTime) -> pendulum.DateTime:
         """Helper function to check currently supplied date against a
